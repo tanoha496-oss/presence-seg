@@ -125,7 +125,7 @@ nav button[aria-selected="true"]{color:var(--pk)}
 <div id="sres"></div>
 </div>
 </section>
-<p class="mut center" id="ver">Version 4 · 18/11/2026</p>
+<p class="mut center" id="ver">Version 5 · 18/11/2026</p>
 </main>
 <nav>
 <button data-t="t-etu" aria-selected="true"><span>✅</span>Étudiant</button>
@@ -141,7 +141,7 @@ const db=getFirestore(app),au=initializeAuth(app,{persistence:browserSessionPers
 const N=["ADEOYE ABDUL KADER KOUADIOIO JEAN ENOCK","ADIA CHRIST ELIEL ELNATHAN","ADIA AKISSI YASMINE","AÏMAVO KOUAME STEVEN YANNICK","AKE LOBA LOUIS MARIE","AKE NAOMI NELLY SAMIRA","AKMEL MEMEL CLAUDE CESAR","ATTA CHONOU CHRIST EMMANUEL","BAKAYOKO AICHA","BALOITCHA MEDESSE NORBERT","BAMBA CHEICK ABOU","BOLOU CHRIST ISRAEL","BOSSO ANOMAN MAKISSI ROSANE SAMIRA","BOUARE FATIMATOU ZAHARAHOU","DOGBO NANDJUY STACHYS EPHRAIM","DOSSO ALIMA","DOUA ANGE NORGIL","GRAGNON OPRI RINNA JOCELINE","GRAH ORY ANGE ELIE","GREKOU OPELY GUY LANDRY","GUEI MONDE ELIE","GUEÏ MARIE-LAUREN","IBEH EBERECHI PRINCESSES MARIE-PASCALE","IDIANE MARIETOU","KEI GNONSESIEKAN TRIPHENE","KEITA ADIZATOU","KEITA SIRA","KOFFI AKISSI RUTH","KOFFI AMAN ADJOUA ANNE MARIE","KOFFI ARIELLE JUNIOR","KOFFI AUXYNA DOLORES AURORE","KOFFI MOKOA DJENEBOU","KOFFI AHOU GRACE MARIE FAUSTINE","KOFI BLA GRACE ANISNOVANE","KOKO BOGA DOUDOU CHRIST MOREL","KOKOA ANTHELME DELORS","KOKOI ADA FRANCOISE DORIANE","KONAN AMENAN URIELLE SEPHORA","KONAN KOUAKOU KAN JUNIOR","KONAN MOYHIE ANGE JOHAN","KONAN RENI ELOHIM","KONATE ALLASSANE","KONATE DJENEBOU","KONATE KADY RAEL","KONE NESMON ULD","KONE SAMIRA FANTA","KONE TIEMOKO CHEICK","KORE BAI JEAN DAVID","KORE ZENASSA MARIE AUDE ANDREA","KOSSONOOU KOFFI ULRICH","KOSSONOU KOUAME CHRISTYVAN","KOSSONOU YAO ANGE","KOUA AKLOUDJOUE JEAN EZEKIEL","KOUAKOU AUDE SARA YETY","KOUAKOU N'GUESSAN CHRIS BRYAN","KOUAME AFFIA MARIE YASMINE","KOUAME DJE BIJOU","KOUAME EPOKOU ANGE URIEL","KOUAME HARIEL JEAN MICKAEL","KOUAME JEAN CHRIST","KOUAME LOU DJESSAN EMMANUELLE HADASSA","KOUAME N'GANZA SEPHORA","KOUASSI AFFOUE NADEGE","KOUKRA LOKO JOSIAS CHRIS YANNICK","KOULIBALY TANIDIA GNELE SHAKIRA","KOUMALAN EUNICE ESTHER","LAGO ANGE LARRY","LOHOUES MELEME ANNE MARIE","LOROUGNON BEDY TRAZIE IVANN","MAHI MAHI JULES FERRY","M'BO CHIADON NAOMI","MIDIOUR SAMY BONAVENTURE","M'PONON BOTO EVE MICAELLA","N'DRE CYRRILIST BINJAMIN","NEAN GAHIE EMMANUEL YOHAN","N'GORAN ADJOUA MARIE ESTHER","N'GORAN AKISSI ROXAN","N'GOU ADON EMMA","N'GUESSAN ANGE RUTH","N'GUESSAN KOFFI ELYSEE ANGE CORNEILLE","NIKIEMA SALIF","OUATTARA FANTA","OUATTARA SINAKAPOULOTCHIN ROSE HERMINE","OUEDRAOGO AMINATA","OUEDRAOGO NOUFFOU CHEICK YVANN","SALBRE AKISSI AICHA","SANOGO AWA SARAH","SANUSI MOUHAMMAD FAYAD OYEWOLE","SEKA YAPI JOEL","SEKA APO DANIEL","SIALOU AYA SARAH MARIE CECILE","SIDIBE TENIN","SIDIBE TOUMANY","SIDIBE AWA","SORGHO HABIBOU","SORO AMINATA","TAFIN GUY DEMOREL","TAHOU BONMANIN ARMEL DAVID","TAKI ADJOBA MARIE-AUDE","TANO AHISSIA RUTH NATACHA","TANOH AMOIKON ANGE JEAN-BAPTISTE","TRA LOU DEBORA ELODIE","TRAORE BRAHIM","VALEAN LEONTINE","WADJA ESSIKA EPIPHANE MARIE-ISRAEL","YAO ADJOUA ANGE MYRIAM YASMINE","YAO AKISSI ANDREA CHANELLE","YEO SEGNENINTENIN MARIAM","YESSOUFOU KAOSSARAH","YETONGNON ADJO MARIE DOMINIQUE ESTHER","ZANA ROKY DIHAMA","ZANRE ABDOUL-RAZAK","ZEBLI BOUEDOU YANN JORIS"];
 const $=i=>document.getElementById(i);
 let DEV=localStorage.getItem("dev");if(!DEV){DEV=Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.setItem("dev",DEV)}
-let selSid=null,room=null,sess=null,tok="",prev="",left=TTL,tm=null,SC=[],SS=[],want="t-etu",stream=null,logged=false;
+let selSid=null,room=null,sess=null,tok="",prev="",left=TTL,tm=null,SC=[],SS=[],want="t-etu",stream=null,logged=false,granted=null;
 const msg=(id,ok,t)=>{$(id).innerHTML='<div class="msg '+(ok?"ok":"ko")+'">'+t+"</div>"};
 function confetti(){const c=["#ff2d87","#7a3cff","#1e90ff","#00cfe8","#ffc21a","#7cff6b"];for(let i=0;i<28;i++){const e=document.createElement("i");e.className="conf";e.style.background=c[i%6];e.style.setProperty("--x",(Math.random()*320-160)+"px");e.style.left=(30+Math.random()*40)+"%";document.body.appendChild(e);setTimeout(()=>e.remove(),1700)}}
 function fill(q){q=(q||"").toLowerCase();let h="";N.forEach((x,i)=>{if(!q||x.toLowerCase().includes(q))h+='<option value="'+i+'">'+x+"</option>"});$("nom").innerHTML=h||'<option value="">Aucun nom trouvé</option>'}
@@ -179,12 +179,13 @@ $("res").innerHTML='<div class="msg ok" style="text-align:center;padding:20px"><
 $("res").scrollIntoView({behavior:"smooth",block:"center"});if(navigator.vibrate)navigator.vibrate(200);confetti()}
 catch(e){msg("res",false,e.code==="permission-denied"?"Scan refusé : code expiré, présence fermée, hors des heures du cours, nom déjà marqué ou téléphone déjà utilisé.":"Erreur ("+(e.code||"inconnue")+"). Vérifie ta connexion et réessaie.")}}
 /* ---- Connexion délégué ---- */
-async function login(){try{await signInWithEmailAndPassword(au,EMAIL,$("code").value.trim());$("code").value="";$("lres").innerHTML=""}catch(e){msg("lres",false,"Code incorrect.")}}
+async function login(){try{await signInWithEmailAndPassword(au,EMAIL,$("code").value.trim());$("code").value="";$("lres").innerHTML="";granted=want;show(want)}catch(e){msg("lres",false,e.code==="auth/too-many-requests"?"Trop d’essais. Réessaie dans quelques minutes.":"Code incorrect.")}}
 $("unlock").onclick=login;$("code").onkeydown=e=>{if(e.key==="Enter")login()};
-$("out").onclick=()=>signOut(au);$("out2").onclick=()=>signOut(au);
+const lockAll=()=>{granted=null;signOut(au);show("t-etu")};$("out").onclick=lockAll;$("out2").onclick=lockAll;
 onAuthStateChanged(au,u=>{logged=!!u;if(u){onSnapshot(collection(db,"scans"),s=>{SC=s.docs.map(d=>d.data());render()});onSnapshot(collection(db,"sessions"),s=>{SS=s.docs.map(d=>d.data()).sort((a,b)=>+a.sid-+b.sid);render()})}show(want)});
-function show(w){want=w;const t=(w!=="t-etu"&&!logged)?"t-lock":w;["t-etu","t-lock","t-del","t-sui"].forEach(id=>$(id).hidden=id!==t);document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.t===w))}
+function show(w){want=w;if(w!==granted)granted=null;const t=(w!=="t-etu"&&granted!==w)?"t-lock":w;["t-etu","t-lock","t-del","t-sui"].forEach(id=>$(id).hidden=id!==t);document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.t===w))}
 document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>show(b.dataset.t));
+document.addEventListener("visibilitychange",()=>{if(document.hidden){granted=null}else if(want!=="t-etu"){show(want)}});
 /* ---- Délégué : séance et QR ---- */
 $("room").onclick=async()=>{try{room=await getPos();$("roomst").textContent="Salle définie (rayon de "+RAY+" m).";localStorage.setItem("room",JSON.stringify(room))}catch(e){msg("dres",false,"Autorise la localisation pour définir la salle.")}};
 try{const r=JSON.parse(localStorage.getItem("room"));if(r){room=r;$("roomst").textContent="Salle définie (rayon de "+RAY+" m)."}}catch(e){}
@@ -200,7 +201,7 @@ if(!dt||!hd||!hf||hf<=hd){msg("dres",false,"Choisis la date, l’heure de début
 const sa=new Date(dt+"T"+hd),ea=new Date(dt+"T"+hf),hours=Math.round((ea-sa)/1800000)/2,sid=String(sa.getTime());
 sess={sid,label:$("mat").value.trim()||"Cours",hours,sa,ea,dt,hd,hf};selSid=sid;
 try{await setDoc(doc(db,"sessions",sid),{sid,label:sess.label,hours:sess.hours,date:dt,start:hd,end:hf,created:serverTimestamp()});await rotate()}catch(e){msg("dres",false,"Impossible de lancer : vérifie ta connexion.");sess=null;return}
-$("st").textContent="Présence ouverte : "+sess.label+" ("+hd+" à "+hf+")";$("qr").hidden=false;$("barw").hidden=false;$("go").hidden=true;$("stop").hidden=false;$("dres").innerHTML="";
+$("st").textContent="Présence ouverte : "+sess.label+" ("+hd+" à "+hf+")";try{if(navigator.wakeLock)navigator.wakeLock.request("screen").catch(()=>{})}catch(e){}$("qr").hidden=false;$("barw").hidden=false;$("go").hidden=true;$("stop").hidden=false;$("dres").innerHTML="";
 tm=setInterval(async()=>{left--;$("bar").style.width=(left/TTL*100)+"%";$("cd").textContent="Nouveau code dans "+Math.max(left,0)+" s";if(left<=0){try{await rotate()}catch(e){}}},1000)};
 $("stop").onclick=async()=>{clearInterval(tm);try{await updateDoc(doc(db,"session","current"),{open:false})}catch(e){}
 sess=null;$("st").textContent="Présence fermée";$("qr").hidden=true;$("barw").hidden=true;$("cd").textContent="";$("go").hidden=false;$("stop").hidden=true};
