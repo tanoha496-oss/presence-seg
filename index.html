@@ -125,7 +125,7 @@ nav button[aria-selected="true"]{color:var(--pk)}
 <div id="sres"></div>
 </div>
 </section>
-<p class="mut center" id="ver">Version 5 · 18/11/2026</p>
+<p class="mut center" id="ver">Version 6 · 18/11/2026</p>
 </main>
 <nav>
 <button data-t="t-etu" aria-selected="true"><span>✅</span>Étudiant</button>
@@ -168,6 +168,8 @@ if(txt){closeCam();handle(txt);return}}catch(e){}busy=false})()}
 requestAnimationFrame(loop)})()};
 async function handle(txt){
 let p;try{p=JSON.parse(txt);if(!p.s||!p.t)throw 0}catch(e){msg("res",false,"Ce QR code n’est pas celui de la présence.");return}
+let dn=null;try{dn=JSON.parse(localStorage.getItem("done_"+p.s)||"null")}catch(e){}
+if(dn){$("res").innerHTML='<div class="msg ok" style="text-align:center;padding:20px"><div style="font-size:48px">☑️</div><div style="font-size:20px">Tu es déjà marqué présent !</div><div style="font-weight:400;margin-top:6px">'+N[dn.i]+" · scan à "+dn.hh+"</div><div style=\"font-weight:400;margin-top:6px\">Pas besoin de scanner une deuxième fois.</div></div>";$("res").scrollIntoView({behavior:"smooth",block:"center"});return}
 const i=+$("nom").value;let pos;
 try{pos=await getPos()}catch(e){msg("res",false,"Scan refusé : autorise la localisation pour prouver que tu es en classe.");return}
 if(p.a!=null&&dist(pos.lat,pos.lng,p.a,p.o)>RAY){msg("res",false,"Scan refusé : tu es trop loin de la salle (plus de "+RAY+" m).");return}
@@ -175,6 +177,7 @@ const b=writeBatch(db);
 b.set(doc(db,"scans",p.s+"_"+i),{sid:p.s,i,token:p.t,ts:serverTimestamp(),dev:DEV,lat:pos.lat,lng:pos.lng});
 b.set(doc(db,"devices",p.s+"_"+DEV),{sid:p.s,i});
 try{await b.commit();const t=new Date(),hh=String(t.getHours()).padStart(2,"0")+"h"+String(t.getMinutes()).padStart(2,"0");
+try{localStorage.setItem("done_"+p.s,JSON.stringify({i,hh}))}catch(e){}
 $("res").innerHTML='<div class="msg ok" style="text-align:center;padding:20px"><div style="font-size:48px">✅</div><div style="font-size:21px">Tu as été marqué présent !</div><div style="font-weight:400;margin-top:6px">'+N[i]+" · "+hh+"</div></div>";
 $("res").scrollIntoView({behavior:"smooth",block:"center"});if(navigator.vibrate)navigator.vibrate(200);confetti()}
 catch(e){msg("res",false,e.code==="permission-denied"?"Scan refusé : code expiré, présence fermée, hors des heures du cours, nom déjà marqué ou téléphone déjà utilisé.":"Erreur ("+(e.code||"inconnue")+"). Vérifie ta connexion et réessaie.")}}
