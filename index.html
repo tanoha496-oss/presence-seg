@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Présence QR</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#7a3cff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Présence">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
 <style>
 :root{--bg:#f1e8ff;--card:#fff;--ink:#1b1040;--mut:#6a5f95;--line:#e4d8ff;--pk:#ff2d87;--vi:#7a3cff;--bl:#1e90ff;--cy:#00cfe8;--ok:#0b7d4c;--okbg:#c9f7df;--ko:#c0153a;--kobg:#ffdbe4}
 @media(prefers-color-scheme:dark){:root{--bg:#0d0626;--card:#1c0f4a;--ink:#f5f0ff;--mut:#b7a9ec;--line:#3a2780;--ok:#6dffb4;--okbg:#0e3b2a;--ko:#ff8fae;--kobg:#4a1030}}
@@ -61,7 +67,7 @@ nav button[aria-selected="true"]{color:var(--pk)}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
-<header><h1>📲 Présence QR</h1><p>Licence 1 SEG, groupe 2</p></header>
+<header><h1>📲 Présence QR</h1><p>Licence 1 SEG, groupe 2</p><button id="inst" hidden style="margin-top:10px;width:auto;background:#fff;color:#7a3cff;padding:9px 16px">📲 Installer l’application</button><p id="ios" hidden>Sur iPhone : appuie sur Partager, puis sur « Sur l’écran d’accueil ».</p></header>
 <main>
 <section id="t-etu">
 <div class="card">
@@ -199,6 +205,12 @@ N.forEach((nm,i)=>{let m=0,hs=0;SS.forEach(s=>{if(!(pr[s.sid]&&i in pr[s.sid])){
 SS.forEach(s=>{const d=new Date(+s.sid);Object.keys(pr[s.sid]||{}).forEach(i=>{const t=pr[s.sid][i];b.push([d.toLocaleDateString("fr-FR"),s.label,N[i],t?t.toLocaleTimeString("fr-FR"):""])})});
 const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(a),"Absences");XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(b),"Présences");
 XLSX.writeFile(wb,"presence-semaine.xlsx");msg("sres",true,"Fichier téléchargé.")};
+let ev=null;
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();ev=e;$("inst").hidden=false});
+window.addEventListener("appinstalled",()=>{$("inst").hidden=true});
+$("inst").onclick=async()=>{if(ev){ev.prompt();await ev.userChoice;ev=null;$("inst").hidden=true}};
+if(/iphone|ipad/i.test(navigator.userAgent)&&!navigator.standalone)$("ios").hidden=false;
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");
 show("t-etu");
 </script>
 </body>
