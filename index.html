@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Présence QR</title>
+<style>
+:root{--bg:#f1e8ff;--card:#fff;--ink:#1b1040;--mut:#6a5f95;--line:#e4d8ff;--pk:#ff2d87;--vi:#7a3cff;--bl:#1e90ff;--cy:#00cfe8;--ok:#0b7d4c;--okbg:#c9f7df;--ko:#c0153a;--kobg:#ffdbe4}
+@media(prefers-color-scheme:dark){:root{--bg:#0d0626;--card:#1c0f4a;--ink:#f5f0ff;--mut:#b7a9ec;--line:#3a2780;--ok:#6dffb4;--okbg:#0e3b2a;--ko:#ff8fae;--kobg:#4a1030}}
+*{box-sizing:border-box}
+body{margin:0 auto;background:var(--bg);color:var(--ink);font:16px/1.5 "Trebuchet MS","Segoe UI",system-ui,sans-serif;max-width:520px;padding-bottom:92px}
+header{background:linear-gradient(120deg,#ff2d87,#7a3cff,#1e90ff,#00cfe8,#ff2d87);background-size:300% 300%;animation:flow 8s linear infinite;color:#fff;padding:22px 18px 20px;border-radius:0 0 26px 26px}
+header h1{margin:0;font-size:22px}header p{margin:2px 0 0;font-size:13px}
+@keyframes flow{to{background-position:300% 50%}}
+@keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes glow{0%,100%{box-shadow:0 0 0 3px var(--pk),0 0 22px var(--pk)}50%{box-shadow:0 0 0 3px var(--cy),0 0 22px var(--cy)}}
+@keyframes pop{40%{transform:scale(1.3)}}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@keyframes fall{to{transform:translate(var(--x),260px) rotate(540deg);opacity:0}}
+@keyframes scanl{from{top:30px}to{top:160px}}
+main{padding:16px}
+section[hidden]{display:none}
+section:not([hidden])>.card{animation:up .45s ease both}
+.card{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:16px;margin-bottom:14px}
+h2{font-size:18px;margin:0 0 10px}
+.mut{color:var(--mut);font-size:13px}
+.center{text-align:center}
+.qrbox{background:#fff;border-radius:16px;padding:8px;margin:14px auto;width:max-content;animation:glow 3s linear infinite}
+.qrbox img{display:block;width:240px;height:240px;image-rendering:pixelated}
+.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ffc21a,var(--pk),var(--vi));transition:width 1s linear}
+.big{font-size:34px;font-weight:800;color:var(--pk)}
+button,select,input{font:inherit;color:var(--ink)}
+select,input{width:100%;padding:11px;border:2px solid var(--line);border-radius:12px;background:var(--card);margin-bottom:10px}
+button{border:0;border-radius:14px;padding:13px 14px;font-weight:800;cursor:pointer;width:100%;margin-top:6px}
+button:active{transform:scale(.96)}
+.pri{background:linear-gradient(120deg,var(--pk),var(--vi));color:#fff}
+.sec{background:transparent;border:2px solid var(--vi);color:var(--vi)}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.msg{border-radius:14px;padding:11px 13px;font-size:14px;font-weight:700;margin-top:12px}
+.ok{background:var(--okbg);color:var(--ok);animation:pop .5s}
+.ko{background:var(--kobg);color:var(--ko);animation:shake .4s}
+.cam{display:none;position:relative;height:220px;border-radius:16px;background:#111;margin-top:12px;overflow:hidden}
+.cam.on{display:block}
+.cam video{width:100%;height:100%;object-fit:cover}
+.cam i{position:absolute;left:30px;right:30px;height:3px;background:var(--pk);box-shadow:0 0 12px var(--pk);animation:scanl 1.2s ease-in-out infinite alternate}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-weight:400;color:var(--mut);text-align:left}
+td{padding:8px 0;border-top:2px solid var(--line)}
+td:last-child,th:last-child{text-align:right}
+.tag{padding:2px 8px;border-radius:10px;font-size:12px;font-weight:800;white-space:nowrap}
+.conf{position:fixed;top:30%;left:50%;width:10px;height:10px;border-radius:2px;pointer-events:none;animation:fall 1.3s ease-out forwards}
+nav{position:fixed;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;display:flex;background:var(--card);border-top:2px solid var(--line);padding:8px}
+nav button{background:none;color:var(--mut);font-size:12px;margin:0;padding:8px 4px}
+nav button span{display:block;font-size:22px}
+nav button[aria-selected="true"]{color:var(--pk)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+<header><h1>📲 Présence QR</h1><p>Licence 1 SEG, groupe 2</p></header>
+<main>
+<section id="t-etu">
+<div class="card">
+<h2>Marquer ma présence</h2>
+<p class="mut">Cherche ton nom, choisis-le, puis scanne le QR code du délégué.</p>
+<input id="rech" type="search" placeholder="Cherche ton nom" aria-label="Chercher ton nom">
+<select id="nom" aria-label="Ton nom"></select>
+<button class="pri" id="scan">Scanner le QR code</button>
+<div class="cam" id="cam"><video id="vid" muted playsinline></video><i></i></div>
+<button class="sec" id="scan-x" hidden>Fermer la caméra</button>
+<div id="res"></div>
+</div>
+</section>
+
+<section id="t-lock" hidden>
+<div class="card center">
+<div style="font-size:56px">🔐</div>
+<h2>Espace délégué</h2>
+<p class="mut">Entre ton code secret pour continuer.</p>
+<input id="code" type="password" inputmode="numeric" autocomplete="current-password" placeholder="Code secret" aria-label="Code secret" style="text-align:center;letter-spacing:6px">
+<button class="pri" id="unlock">Déverrouiller</button>
+<div id="lres"></div>
+</div>
+</section>
+
+<section id="t-del" hidden>
+<div class="card center">
+<h2 id="st">Présence fermée</h2>
+<div class="qrbox" id="qr" hidden></div>
+<div class="bar" id="barw" hidden><i id="bar"></i></div>
+<p class="mut" id="cd"></p>
+<div class="big" id="cnt">0 sur 113</div>
+<p class="mut">présents à cette séance</p>
+</div>
+<div class="card">
+<h2>Lancer une séance</h2>
+<input id="mat" type="text" placeholder="Matière, par exemple Microéconomie">
+<input id="hrs" type="number" min="1" max="8" value="2" aria-label="Durée en heures">
+<p class="mut">Durée du cours en heures (sert à calculer les heures d’absence).</p>
+<button class="sec" id="room">Définir la salle (ma position)</button>
+<p class="mut" id="roomst">Salle : pas encore définie</p>
+<button class="pri" id="go">Lancer la présence</button>
+<button class="sec" id="stop" hidden>Arrêter la présence</button>
+<div id="dres"></div>
+</div>
+</section>
+
+<section id="t-sui" hidden>
+<div class="card">
+<h2>Suivi</h2>
+<table><thead><tr><th>Étudiant</th><th>Séance</th><th>Absences</th></tr></thead><tbody id="tb"></tbody></table>
+<button class="pri" id="xl">Télécharger le fichier Excel</button>
+<button class="sec" id="out">Se déconnecter</button>
+<div id="sres"></div>
+</div>
+</section>
+</main>
+<nav>
+<button data-t="t-etu" aria-selected="true"><span>✅</span>Étudiant</button>
+<button data-t="t-del" aria-selected="false"><span>🎓</span>Délégué</button>
+<button data-t="t-sui" aria-selected="false"><span>📊</span>Suivi</button>
+</nav>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {getFirestore,doc,setDoc,updateDoc,collection,onSnapshot,writeBatch,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {getAuth,signInWithEmailAndPassword,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+const app=initializeApp({apiKey:"AIzaSyDt-JHcKVGdpfCkbzCkUvT3wO3IL_jkc0I",authDomain:"presence-seg.firebaseapp.com",projectId:"presence-seg",storageBucket:"presence-seg.firebasestorage.app",messagingSenderId:"116085691902",appId:"1:116085691902:web:5d8a656ed588cd26eb5caf"});
+const db=getFirestore(app),au=getAuth(app),EMAIL="delegue@presence-seg.app",TTL=20,RAY=100;
+const N=["ADEOYE ABDUL KADER KOUADIOIO JEAN ENOCK","ADIA CHRIST ELIEL ELNATHAN","ADIA AKISSI YASMINE","AÏMAVO KOUAME STEVEN YANNICK","AKE LOBA LOUIS MARIE","AKE NAOMI NELLY SAMIRA","AKMEL MEMEL CLAUDE CESAR","ATTA CHONOU CHRIST EMMANUEL","BAKAYOKO AICHA","BALOITCHA MEDESSE NORBERT","BAMBA CHEICK ABOU","BOLOU CHRIST ISRAEL","BOSSO ANOMAN MAKISSI ROSANE SAMIRA","BOUARE FATIMATOU ZAHARAHOU","DOGBO NANDJUY STACHYS EPHRAIM","DOSSO ALIMA","DOUA ANGE NORGIL","GRAGNON OPRI RINNA JOCELINE","GRAH ORY ANGE ELIE","GREKOU OPELY GUY LANDRY","GUEI MONDE ELIE","GUEÏ MARIE-LAUREN","IBEH EBERECHI PRINCESSES MARIE-PASCALE","IDIANE MARIETOU","KEI GNONSESIEKAN TRIPHENE","KEITA ADIZATOU","KEITA SIRA","KOFFI AKISSI RUTH","KOFFI AMAN ADJOUA ANNE MARIE","KOFFI ARIELLE JUNIOR","KOFFI AUXYNA DOLORES AURORE","KOFFI MOKOA DJENEBOU","KOFFI AHOU GRACE MARIE FAUSTINE","KOFI BLA GRACE ANISNOVANE","KOKO BOGA DOUDOU CHRIST MOREL","KOKOA ANTHELME DELORS","KOKOI ADA FRANCOISE DORIANE","KONAN AMENAN URIELLE SEPHORA","KONAN KOUAKOU KAN JUNIOR","KONAN MOYHIE ANGE JOHAN","KONAN RENI ELOHIM","KONATE ALLASSANE","KONATE DJENEBOU","KONATE KADY RAEL","KONE NESMON ULD","KONE SAMIRA FANTA","KONE TIEMOKO CHEICK","KORE BAI JEAN DAVID","KORE ZENASSA MARIE AUDE ANDREA","KOSSONOOU KOFFI ULRICH","KOSSONOU KOUAME CHRISTYVAN","KOSSONOU YAO ANGE","KOUA AKLOUDJOUE JEAN EZEKIEL","KOUAKOU AUDE SARA YETY","KOUAKOU N'GUESSAN CHRIS BRYAN","KOUAME AFFIA MARIE YASMINE","KOUAME DJE BIJOU","KOUAME EPOKOU ANGE URIEL","KOUAME HARIEL JEAN MICKAEL","KOUAME JEAN CHRIST","KOUAME LOU DJESSAN EMMANUELLE HADASSA","KOUAME N'GANZA SEPHORA","KOUASSI AFFOUE NADEGE","KOUKRA LOKO JOSIAS CHRIS YANNICK","KOULIBALY TANIDIA GNELE SHAKIRA","KOUMALAN EUNICE ESTHER","LAGO ANGE LARRY","LOHOUES MELEME ANNE MARIE","LOROUGNON BEDY TRAZIE IVANN","MAHI MAHI JULES FERRY","M'BO CHIADON NAOMI","MIDIOUR SAMY BONAVENTURE","M'PONON BOTO EVE MICAELLA","N'DRE CYRRILIST BINJAMIN","NEAN GAHIE EMMANUEL YOHAN","N'GORAN ADJOUA MARIE ESTHER","N'GORAN AKISSI ROXAN","N'GOU ADON EMMA","N'GUESSAN ANGE RUTH","N'GUESSAN KOFFI ELYSEE ANGE CORNEILLE","NIKIEMA SALIF","OUATTARA FANTA","OUATTARA SINAKAPOULOTCHIN ROSE HERMINE","OUEDRAOGO AMINATA","OUEDRAOGO NOUFFOU CHEICK YVANN","SALBRE AKISSI AICHA","SANOGO AWA SARAH","SANUSI MOUHAMMAD FAYAD OYEWOLE","SEKA YAPI JOEL","SEKA APO DANIEL","SIALOU AYA SARAH MARIE CECILE","SIDIBE TENIN","SIDIBE TOUMANY","SIDIBE AWA","SORGHO HABIBOU","SORO AMINATA","TAFIN GUY DEMOREL","TAHOU BONMANIN ARMEL DAVID","TAKI ADJOBA MARIE-AUDE","TANO AHISSIA RUTH NATACHA","TANOH AMOIKON ANGE JEAN-BAPTISTE","TRA LOU DEBORA ELODIE","TRAORE BRAHIM","VALEAN LEONTINE","WADJA ESSIKA EPIPHANE MARIE-ISRAEL","YAO ADJOUA ANGE MYRIAM YASMINE","YAO AKISSI ANDREA CHANELLE","YEO SEGNENINTENIN MARIAM","YESSOUFOU KAOSSARAH","YETONGNON ADJO MARIE DOMINIQUE ESTHER","ZANA ROKY DIHAMA","ZANRE ABDOUL-RAZAK","ZEBLI BOUEDOU YANN JORIS"];
+const $=i=>document.getElementById(i);
+let DEV=localStorage.getItem("dev");if(!DEV){DEV=Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.setItem("dev",DEV)}
+let room=null,sess=null,tok="",prev="",left=TTL,tm=null,SC=[],SS=[],want="t-etu",stream=null,logged=false;
+const msg=(id,ok,t)=>{$(id).innerHTML='<div class="msg '+(ok?"ok":"ko")+'">'+t+"</div>"};
+function confetti(){const c=["#ff2d87","#7a3cff","#1e90ff","#00cfe8","#ffc21a","#7cff6b"];for(let i=0;i<28;i++){const e=document.createElement("i");e.className="conf";e.style.background=c[i%6];e.style.setProperty("--x",(Math.random()*320-160)+"px");e.style.left=(30+Math.random()*40)+"%";document.body.appendChild(e);setTimeout(()=>e.remove(),1700)}}
+function fill(q){q=(q||"").toLowerCase();let h="";N.forEach((x,i)=>{if(!q||x.toLowerCase().includes(q))h+='<option value="'+i+'">'+x+"</option>"});$("nom").innerHTML=h||'<option value="">Aucun nom trouvé</option>'}
+fill();$("rech").oninput=e=>fill(e.target.value);
+function getPos(){return new Promise((ok,ko)=>navigator.geolocation?navigator.geolocation.getCurrentPosition(p=>ok({lat:+p.coords.latitude.toFixed(5),lng:+p.coords.longitude.toFixed(5)}),()=>ko(),{enableHighAccuracy:true,timeout:15000}):ko())}
+function dist(a,b,c,d){const R=6371000,r=Math.PI/180,x=(c-a)*r,y=(d-b)*r,h=Math.sin(x/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin(y/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
+/* ---- Étudiant : scan ---- */
+function closeCam(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$("cam").classList.remove("on");$("scan-x").hidden=true}
+$("scan-x").onclick=closeCam;
+$("scan").onclick=async()=>{
+if($("nom").value===""){msg("res",false,"Choisis d’abord ton nom dans la liste.");return}
+$("res").innerHTML="";
+try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}})}catch(e){msg("res",false,"La caméra n’est pas autorisée. Autorise-la dans les réglages du navigateur.");return}
+const v=$("vid");v.srcObject=stream;await v.play();$("cam").classList.add("on");$("scan-x").hidden=false;
+const c=document.createElement("canvas"),x=c.getContext("2d",{willReadFrequently:true});
+(function loop(){if(!stream)return;if(v.readyState===4){c.width=v.videoWidth;c.height=v.videoHeight;x.drawImage(v,0,0);const d=x.getImageData(0,0,c.width,c.height),r=jsQR(d.data,d.width,d.height);if(r){closeCam();handle(r.data);return}}requestAnimationFrame(loop)})()};
+async function handle(txt){
+let p;try{p=JSON.parse(txt);if(!p.s||!p.t)throw 0}catch(e){msg("res",false,"Ce QR code n’est pas celui de la présence.");return}
+const i=+$("nom").value;let pos;
+try{pos=await getPos()}catch(e){msg("res",false,"Scan refusé : autorise la localisation pour prouver que tu es en classe.");return}
+if(p.a!=null&&dist(pos.lat,pos.lng,p.a,p.o)>RAY){msg("res",false,"Scan refusé : tu es trop loin de la salle (plus de "+RAY+" m).");return}
+const b=writeBatch(db);
+b.set(doc(db,"scans",p.s+"_"+i),{sid:p.s,i,token:p.t,ts:serverTimestamp(),dev:DEV,lat:pos.lat,lng:pos.lng});
+b.set(doc(db,"devices",p.s+"_"+DEV),{sid:p.s,i});
+try{await b.commit();const t=new Date();msg("res",true,"Présence enregistrée à "+String(t.getHours()).padStart(2,"0")+"h"+String(t.getMinutes()).padStart(2,"0")+" pour "+N[i]+".");confetti()}
+catch(e){msg("res",false,"Scan refusé : code expiré, présence fermée, nom déjà marqué ou téléphone déjà utilisé.")}}
+/* ---- Connexion délégué ---- */
+async function login(){try{await signInWithEmailAndPassword(au,EMAIL,$("code").value.trim());$("code").value="";$("lres").innerHTML=""}catch(e){msg("lres",false,"Code incorrect.")}}
+$("unlock").onclick=login;$("code").onkeydown=e=>{if(e.key==="Enter")login()};
+$("out").onclick=()=>signOut(au);
+onAuthStateChanged(au,u=>{logged=!!u;if(u){onSnapshot(collection(db,"scans"),s=>{SC=s.docs.map(d=>d.data());render()});onSnapshot(collection(db,"sessions"),s=>{SS=s.docs.map(d=>d.data()).sort((a,b)=>+a.sid-+b.sid);render()})}show(want)});
+function show(w){want=w;const t=(w!=="t-etu"&&!logged)?"t-lock":w;["t-etu","t-lock","t-del","t-sui"].forEach(id=>$(id).hidden=id!==t);document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.t===w))}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>show(b.dataset.t));
+/* ---- Délégué : séance et QR ---- */
+$("room").onclick=async()=>{try{room=await getPos();$("roomst").textContent="Salle définie (rayon de "+RAY+" m).";localStorage.setItem("room",JSON.stringify(room))}catch(e){msg("dres",false,"Autorise la localisation pour définir la salle.")}};
+try{const r=JSON.parse(localStorage.getItem("room"));if(r){room=r;$("roomst").textContent="Salle définie (rayon de "+RAY+" m)."}}catch(e){}
+const rnd=()=>Math.random().toString(36).slice(2,8);
+async function rotate(){prev=tok;tok=rnd();left=TTL;
+await setDoc(doc(db,"session","current"),{sid:sess.sid,open:true,token:tok,prev:prev,updated:serverTimestamp()});
+const q=qrcode(0,"M");q.addData(JSON.stringify({s:sess.sid,t:tok,a:room.lat,o:room.lng}));q.make();$("qr").innerHTML='<img alt="QR code de présence" src="'+q.createDataURL(6,4)+'">'}
+$("go").onclick=async()=>{
+if(!room){msg("dres",false,"Définis d’abord la salle avec le bouton ci-dessus.");return}
+const sid=String(Date.now());sess={sid,label:$("mat").value.trim()||"Cours",hours:Math.max(1,+$("hrs").value||2)};
+try{await setDoc(doc(db,"sessions",sid),{sid,label:sess.label,hours:sess.hours,created:serverTimestamp()});await rotate()}catch(e){msg("dres",false,"Impossible de lancer : vérifie ta connexion.");sess=null;return}
+$("st").textContent="Présence ouverte : "+sess.label;$("qr").hidden=false;$("barw").hidden=false;$("go").hidden=true;$("stop").hidden=false;$("dres").innerHTML="";
+tm=setInterval(async()=>{left--;$("bar").style.width=(left/TTL*100)+"%";$("cd").textContent="Nouveau code dans "+Math.max(left,0)+" s";if(left<=0){try{await rotate()}catch(e){}}},1000)};
+$("stop").onclick=async()=>{clearInterval(tm);try{await updateDoc(doc(db,"session","current"),{open:false})}catch(e){}
+sess=null;$("st").textContent="Présence fermée";$("qr").hidden=true;$("barw").hidden=true;$("cd").textContent="";$("go").hidden=false;$("stop").hidden=true};
+/* ---- Suivi ---- */
+function render(){
+const cur=SS.length?SS[SS.length-1]:null,pr={};
+SC.forEach(s=>{(pr[s.sid]=pr[s.sid]||{})[s.i]=s.ts?s.ts.toDate():null});
+let n=0,h="";
+N.forEach((nm,i)=>{let abs=0;SS.forEach(s=>{if(!(pr[s.sid]&&i in pr[s.sid]))abs+=s.hours});
+const p=cur&&pr[cur.sid]&&i in pr[cur.sid],t=p&&pr[cur.sid][i];if(p)n++;
+const hh=t?String(t.getHours()).padStart(2,"0")+"h"+String(t.getMinutes()).padStart(2,"0"):"";
+h+="<tr><td>"+nm+'</td><td><span class="tag" style="background:var('+(p?"--okbg":"--kobg")+');color:var('+(p?"--ok":"--ko")+')">'+(cur?(p?"Présent "+hh:"Absent"):"—")+"</span></td><td>"+abs+" h</td></tr>"});
+$("tb").innerHTML=h;$("cnt").textContent=n+" sur "+N.length}
+$("xl").onclick=()=>{
+const pr={};SC.forEach(s=>{(pr[s.sid]=pr[s.sid]||{})[s.i]=s.ts?s.ts.toDate():null});
+const a=[["Étudiant","Séances manquées","Heures d’absence"]],b=[["Séance","Matière","Étudiant","Heure du scan"]];
+N.forEach((nm,i)=>{let m=0,hs=0;SS.forEach(s=>{if(!(pr[s.sid]&&i in pr[s.sid])){m++;hs+=s.hours}});a.push([nm,m,hs])});
+SS.forEach(s=>{const d=new Date(+s.sid);Object.keys(pr[s.sid]||{}).forEach(i=>{const t=pr[s.sid][i];b.push([d.toLocaleDateString("fr-FR"),s.label,N[i],t?t.toLocaleTimeString("fr-FR"):""])})});
+const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(a),"Absences");XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(b),"Présences");
+XLSX.writeFile(wb,"presence-semaine.xlsx");msg("sres",true,"Fichier téléchargé.")};
+show("t-etu");
+</script>
+</body>
+</html>
