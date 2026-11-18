@@ -62,8 +62,8 @@ nav button span{display:block;font-size:22px}
 nav button[aria-selected="true"]{color:var(--pk)}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
@@ -105,8 +105,8 @@ nav button[aria-selected="true"]{color:var(--pk)}
 <div class="card">
 <h2>Lancer une séance</h2>
 <input id="mat" type="text" placeholder="Matière, par exemple Microéconomie">
-<input id="hrs" type="number" min="1" max="8" value="2" aria-label="Durée en heures">
-<p class="mut">Durée du cours en heures (sert à calculer les heures d’absence).</p>
+<p class="mut">Date du cours</p><input id="dat" type="date" aria-label="Date du cours"><div class="row"><div><p class="mut">Début</p><input id="hd" type="time" value="08:00" aria-label="Heure de début"></div><div><p class="mut">Fin</p><input id="hf" type="time" value="10:00" aria-label="Heure de fin"></div></div>
+<p class="mut">La durée du cours sert à calculer les heures d’absence.</p>
 <button class="sec" id="room">Définir la salle (ma position)</button>
 <p class="mut" id="roomst">Salle : pas encore définie</p>
 <button class="pri" id="go">Lancer la présence</button>
@@ -117,7 +117,7 @@ nav button[aria-selected="true"]{color:var(--pk)}
 
 <section id="t-sui" hidden>
 <div class="card">
-<h2>Suivi</h2>
+<h2>Suivi</h2><select id="seld" aria-label="Choisir la séance"></select>
 <table><thead><tr><th>Étudiant</th><th>Séance</th><th>Absences</th></tr></thead><tbody id="tb"></tbody></table>
 <button class="pri" id="xl">Télécharger le fichier Excel</button>
 <button class="sec" id="out">Se déconnecter</button>
@@ -132,14 +132,14 @@ nav button[aria-selected="true"]{color:var(--pk)}
 </nav>
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import {getFirestore,doc,setDoc,updateDoc,collection,onSnapshot,writeBatch,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {getFirestore,doc,setDoc,updateDoc,collection,onSnapshot,writeBatch,serverTimestamp,Timestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {getAuth,signInWithEmailAndPassword,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 const app=initializeApp({apiKey:"AIzaSyDt-JHcKVGdpfCkbzCkUvT3wO3IL_jkc0I",authDomain:"presence-seg.firebaseapp.com",projectId:"presence-seg",storageBucket:"presence-seg.firebasestorage.app",messagingSenderId:"116085691902",appId:"1:116085691902:web:5d8a656ed588cd26eb5caf"});
 const db=getFirestore(app),au=getAuth(app),EMAIL="delegue@presence-seg.app",TTL=20,RAY=100;
 const N=["ADEOYE ABDUL KADER KOUADIOIO JEAN ENOCK","ADIA CHRIST ELIEL ELNATHAN","ADIA AKISSI YASMINE","AÏMAVO KOUAME STEVEN YANNICK","AKE LOBA LOUIS MARIE","AKE NAOMI NELLY SAMIRA","AKMEL MEMEL CLAUDE CESAR","ATTA CHONOU CHRIST EMMANUEL","BAKAYOKO AICHA","BALOITCHA MEDESSE NORBERT","BAMBA CHEICK ABOU","BOLOU CHRIST ISRAEL","BOSSO ANOMAN MAKISSI ROSANE SAMIRA","BOUARE FATIMATOU ZAHARAHOU","DOGBO NANDJUY STACHYS EPHRAIM","DOSSO ALIMA","DOUA ANGE NORGIL","GRAGNON OPRI RINNA JOCELINE","GRAH ORY ANGE ELIE","GREKOU OPELY GUY LANDRY","GUEI MONDE ELIE","GUEÏ MARIE-LAUREN","IBEH EBERECHI PRINCESSES MARIE-PASCALE","IDIANE MARIETOU","KEI GNONSESIEKAN TRIPHENE","KEITA ADIZATOU","KEITA SIRA","KOFFI AKISSI RUTH","KOFFI AMAN ADJOUA ANNE MARIE","KOFFI ARIELLE JUNIOR","KOFFI AUXYNA DOLORES AURORE","KOFFI MOKOA DJENEBOU","KOFFI AHOU GRACE MARIE FAUSTINE","KOFI BLA GRACE ANISNOVANE","KOKO BOGA DOUDOU CHRIST MOREL","KOKOA ANTHELME DELORS","KOKOI ADA FRANCOISE DORIANE","KONAN AMENAN URIELLE SEPHORA","KONAN KOUAKOU KAN JUNIOR","KONAN MOYHIE ANGE JOHAN","KONAN RENI ELOHIM","KONATE ALLASSANE","KONATE DJENEBOU","KONATE KADY RAEL","KONE NESMON ULD","KONE SAMIRA FANTA","KONE TIEMOKO CHEICK","KORE BAI JEAN DAVID","KORE ZENASSA MARIE AUDE ANDREA","KOSSONOOU KOFFI ULRICH","KOSSONOU KOUAME CHRISTYVAN","KOSSONOU YAO ANGE","KOUA AKLOUDJOUE JEAN EZEKIEL","KOUAKOU AUDE SARA YETY","KOUAKOU N'GUESSAN CHRIS BRYAN","KOUAME AFFIA MARIE YASMINE","KOUAME DJE BIJOU","KOUAME EPOKOU ANGE URIEL","KOUAME HARIEL JEAN MICKAEL","KOUAME JEAN CHRIST","KOUAME LOU DJESSAN EMMANUELLE HADASSA","KOUAME N'GANZA SEPHORA","KOUASSI AFFOUE NADEGE","KOUKRA LOKO JOSIAS CHRIS YANNICK","KOULIBALY TANIDIA GNELE SHAKIRA","KOUMALAN EUNICE ESTHER","LAGO ANGE LARRY","LOHOUES MELEME ANNE MARIE","LOROUGNON BEDY TRAZIE IVANN","MAHI MAHI JULES FERRY","M'BO CHIADON NAOMI","MIDIOUR SAMY BONAVENTURE","M'PONON BOTO EVE MICAELLA","N'DRE CYRRILIST BINJAMIN","NEAN GAHIE EMMANUEL YOHAN","N'GORAN ADJOUA MARIE ESTHER","N'GORAN AKISSI ROXAN","N'GOU ADON EMMA","N'GUESSAN ANGE RUTH","N'GUESSAN KOFFI ELYSEE ANGE CORNEILLE","NIKIEMA SALIF","OUATTARA FANTA","OUATTARA SINAKAPOULOTCHIN ROSE HERMINE","OUEDRAOGO AMINATA","OUEDRAOGO NOUFFOU CHEICK YVANN","SALBRE AKISSI AICHA","SANOGO AWA SARAH","SANUSI MOUHAMMAD FAYAD OYEWOLE","SEKA YAPI JOEL","SEKA APO DANIEL","SIALOU AYA SARAH MARIE CECILE","SIDIBE TENIN","SIDIBE TOUMANY","SIDIBE AWA","SORGHO HABIBOU","SORO AMINATA","TAFIN GUY DEMOREL","TAHOU BONMANIN ARMEL DAVID","TAKI ADJOBA MARIE-AUDE","TANO AHISSIA RUTH NATACHA","TANOH AMOIKON ANGE JEAN-BAPTISTE","TRA LOU DEBORA ELODIE","TRAORE BRAHIM","VALEAN LEONTINE","WADJA ESSIKA EPIPHANE MARIE-ISRAEL","YAO ADJOUA ANGE MYRIAM YASMINE","YAO AKISSI ANDREA CHANELLE","YEO SEGNENINTENIN MARIAM","YESSOUFOU KAOSSARAH","YETONGNON ADJO MARIE DOMINIQUE ESTHER","ZANA ROKY DIHAMA","ZANRE ABDOUL-RAZAK","ZEBLI BOUEDOU YANN JORIS"];
 const $=i=>document.getElementById(i);
 let DEV=localStorage.getItem("dev");if(!DEV){DEV=Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.setItem("dev",DEV)}
-let room=null,sess=null,tok="",prev="",left=TTL,tm=null,SC=[],SS=[],want="t-etu",stream=null,logged=false;
+let selSid=null,room=null,sess=null,tok="",prev="",left=TTL,tm=null,SC=[],SS=[],want="t-etu",stream=null,logged=false;
 const msg=(id,ok,t)=>{$(id).innerHTML='<div class="msg '+(ok?"ok":"ko")+'">'+t+"</div>"};
 function confetti(){const c=["#ff2d87","#7a3cff","#1e90ff","#00cfe8","#ffc21a","#7cff6b"];for(let i=0;i<28;i++){const e=document.createElement("i");e.className="conf";e.style.background=c[i%6];e.style.setProperty("--x",(Math.random()*320-160)+"px");e.style.left=(30+Math.random()*40)+"%";document.body.appendChild(e);setTimeout(()=>e.remove(),1700)}}
 function fill(q){q=(q||"").toLowerCase();let h="";N.forEach((x,i)=>{if(!q||x.toLowerCase().includes(q))h+='<option value="'+i+'">'+x+"</option>"});$("nom").innerHTML=h||'<option value="">Aucun nom trouvé</option>'}
@@ -153,9 +153,17 @@ $("scan").onclick=async()=>{
 if($("nom").value===""){msg("res",false,"Choisis d’abord ton nom dans la liste.");return}
 $("res").innerHTML="";
 try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}})}catch(e){msg("res",false,"La caméra n’est pas autorisée. Autorise-la dans les réglages du navigateur.");return}
-const v=$("vid");v.srcObject=stream;await v.play();$("cam").classList.add("on");$("scan-x").hidden=false;
+const v=$("vid");$("cam").classList.add("on");$("scan-x").hidden=false;v.srcObject=stream;try{await v.play()}catch(e){}
+const det=("BarcodeDetector" in window)?new BarcodeDetector({formats:["qr_code"]}):null;
+if(!det&&!window.jsQR){closeCam();msg("res",false,"Le lecteur de QR code n’a pas pu se charger. Recharge la page.");return}
 const c=document.createElement("canvas"),x=c.getContext("2d",{willReadFrequently:true});
-(function loop(){if(!stream)return;if(v.readyState===4){c.width=v.videoWidth;c.height=v.videoHeight;x.drawImage(v,0,0);const d=x.getImageData(0,0,c.width,c.height),r=jsQR(d.data,d.width,d.height);if(r){closeCam();handle(r.data);return}}requestAnimationFrame(loop)})()};
+let busy=false;
+(function loop(){if(!stream)return;
+if(v.readyState>=2&&!busy){busy=true;(async()=>{try{let txt=null;
+if(det){const r=await det.detect(v);if(r.length)txt=r[0].rawValue}
+else{c.width=v.videoWidth;c.height=v.videoHeight;x.drawImage(v,0,0);const d=x.getImageData(0,0,c.width,c.height),r=jsQR(d.data,d.width,d.height);if(r)txt=r.data}
+if(txt){closeCam();handle(txt);return}}catch(e){}busy=false})()}
+requestAnimationFrame(loop)})()};
 async function handle(txt){
 let p;try{p=JSON.parse(txt);if(!p.s||!p.t)throw 0}catch(e){msg("res",false,"Ce QR code n’est pas celui de la présence.");return}
 const i=+$("nom").value;let pos;
@@ -165,7 +173,7 @@ const b=writeBatch(db);
 b.set(doc(db,"scans",p.s+"_"+i),{sid:p.s,i,token:p.t,ts:serverTimestamp(),dev:DEV,lat:pos.lat,lng:pos.lng});
 b.set(doc(db,"devices",p.s+"_"+DEV),{sid:p.s,i});
 try{await b.commit();const t=new Date();msg("res",true,"Présence enregistrée à "+String(t.getHours()).padStart(2,"0")+"h"+String(t.getMinutes()).padStart(2,"0")+" pour "+N[i]+".");confetti()}
-catch(e){msg("res",false,"Scan refusé : code expiré, présence fermée, nom déjà marqué ou téléphone déjà utilisé.")}}
+catch(e){msg("res",false,e.code==="permission-denied"?"Scan refusé : code expiré, présence fermée, hors des heures du cours, nom déjà marqué ou téléphone déjà utilisé.":"Erreur ("+(e.code||"inconnue")+"). Vérifie ta connexion et réessaie.")}}
 /* ---- Connexion délégué ---- */
 async function login(){try{await signInWithEmailAndPassword(au,EMAIL,$("code").value.trim());$("code").value="";$("lres").innerHTML=""}catch(e){msg("lres",false,"Code incorrect.")}}
 $("unlock").onclick=login;$("code").onkeydown=e=>{if(e.key==="Enter")login()};
@@ -176,21 +184,27 @@ document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>show(b.dataset.
 /* ---- Délégué : séance et QR ---- */
 $("room").onclick=async()=>{try{room=await getPos();$("roomst").textContent="Salle définie (rayon de "+RAY+" m).";localStorage.setItem("room",JSON.stringify(room))}catch(e){msg("dres",false,"Autorise la localisation pour définir la salle.")}};
 try{const r=JSON.parse(localStorage.getItem("room"));if(r){room=r;$("roomst").textContent="Salle définie (rayon de "+RAY+" m)."}}catch(e){}
+$("dat").value=new Date().toLocaleDateString("sv-SE");
 const rnd=()=>Math.random().toString(36).slice(2,8);
 async function rotate(){prev=tok;tok=rnd();left=TTL;
-await setDoc(doc(db,"session","current"),{sid:sess.sid,open:true,token:tok,prev:prev,updated:serverTimestamp()});
+await setDoc(doc(db,"session","current"),{sid:sess.sid,open:true,token:tok,prev:prev,startAt:Timestamp.fromDate(sess.sa),endAt:Timestamp.fromDate(sess.ea),updated:serverTimestamp()});
 const q=qrcode(0,"M");q.addData(JSON.stringify({s:sess.sid,t:tok,a:room.lat,o:room.lng}));q.make();$("qr").innerHTML='<img alt="QR code de présence" src="'+q.createDataURL(6,4)+'">'}
 $("go").onclick=async()=>{
 if(!room){msg("dres",false,"Définis d’abord la salle avec le bouton ci-dessus.");return}
-const sid=String(Date.now());sess={sid,label:$("mat").value.trim()||"Cours",hours:Math.max(1,+$("hrs").value||2)};
-try{await setDoc(doc(db,"sessions",sid),{sid,label:sess.label,hours:sess.hours,created:serverTimestamp()});await rotate()}catch(e){msg("dres",false,"Impossible de lancer : vérifie ta connexion.");sess=null;return}
-$("st").textContent="Présence ouverte : "+sess.label;$("qr").hidden=false;$("barw").hidden=false;$("go").hidden=true;$("stop").hidden=false;$("dres").innerHTML="";
+const dt=$("dat").value,hd=$("hd").value,hf=$("hf").value;
+if(!dt||!hd||!hf||hf<=hd){msg("dres",false,"Choisis la date, l’heure de début et une heure de fin après le début.");return}
+const sa=new Date(dt+"T"+hd),ea=new Date(dt+"T"+hf),hours=Math.round((ea-sa)/1800000)/2,sid=String(sa.getTime());
+sess={sid,label:$("mat").value.trim()||"Cours",hours,sa,ea,dt,hd,hf};selSid=sid;
+try{await setDoc(doc(db,"sessions",sid),{sid,label:sess.label,hours:sess.hours,date:dt,start:hd,end:hf,created:serverTimestamp()});await rotate()}catch(e){msg("dres",false,"Impossible de lancer : vérifie ta connexion.");sess=null;return}
+$("st").textContent="Présence ouverte : "+sess.label+" ("+hd+" à "+hf+")";$("qr").hidden=false;$("barw").hidden=false;$("go").hidden=true;$("stop").hidden=false;$("dres").innerHTML="";
 tm=setInterval(async()=>{left--;$("bar").style.width=(left/TTL*100)+"%";$("cd").textContent="Nouveau code dans "+Math.max(left,0)+" s";if(left<=0){try{await rotate()}catch(e){}}},1000)};
 $("stop").onclick=async()=>{clearInterval(tm);try{await updateDoc(doc(db,"session","current"),{open:false})}catch(e){}
 sess=null;$("st").textContent="Présence fermée";$("qr").hidden=true;$("barw").hidden=true;$("cd").textContent="";$("go").hidden=false;$("stop").hidden=true};
 /* ---- Suivi ---- */
 function render(){
-const cur=SS.length?SS[SS.length-1]:null,pr={};
+const cur=SS.find(s=>s.sid===selSid)||(SS.length?SS[SS.length-1]:null),pr={};
+const fmt=s=>(s.date?s.date.split("-").reverse().join("/"):new Date(+s.sid).toLocaleDateString("fr-FR"))+" "+(s.start||"")+"–"+(s.end||"")+" "+s.label;
+const sel=$("seld"),opts=SS.slice().reverse().map(s=>'<option value="'+s.sid+'"'+(cur&&cur.sid===s.sid?" selected":"")+">"+fmt(s)+"</option>").join("");if(sel.innerHTML!==opts)sel.innerHTML=opts;
 SC.forEach(s=>{(pr[s.sid]=pr[s.sid]||{})[s.i]=s.ts?s.ts.toDate():null});
 let n=0,h="";
 N.forEach((nm,i)=>{let abs=0;SS.forEach(s=>{if(!(pr[s.sid]&&i in pr[s.sid]))abs+=s.hours});
@@ -198,11 +212,12 @@ const p=cur&&pr[cur.sid]&&i in pr[cur.sid],t=p&&pr[cur.sid][i];if(p)n++;
 const hh=t?String(t.getHours()).padStart(2,"0")+"h"+String(t.getMinutes()).padStart(2,"0"):"";
 h+="<tr><td>"+nm+'</td><td><span class="tag" style="background:var('+(p?"--okbg":"--kobg")+');color:var('+(p?"--ok":"--ko")+')">'+(cur?(p?"Présent "+hh:"Absent"):"—")+"</span></td><td>"+abs+" h</td></tr>"});
 $("tb").innerHTML=h;$("cnt").textContent=n+" sur "+N.length}
+$("seld").onchange=e=>{selSid=e.target.value;render()};
 $("xl").onclick=()=>{
 const pr={};SC.forEach(s=>{(pr[s.sid]=pr[s.sid]||{})[s.i]=s.ts?s.ts.toDate():null});
-const a=[["Étudiant","Séances manquées","Heures d’absence"]],b=[["Séance","Matière","Étudiant","Heure du scan"]];
+const a=[["Étudiant","Séances manquées","Heures d’absence"]],b=[["Date","Début","Fin","Matière","Étudiant","Heure du scan"]];
 N.forEach((nm,i)=>{let m=0,hs=0;SS.forEach(s=>{if(!(pr[s.sid]&&i in pr[s.sid])){m++;hs+=s.hours}});a.push([nm,m,hs])});
-SS.forEach(s=>{const d=new Date(+s.sid);Object.keys(pr[s.sid]||{}).forEach(i=>{const t=pr[s.sid][i];b.push([d.toLocaleDateString("fr-FR"),s.label,N[i],t?t.toLocaleTimeString("fr-FR"):""])})});
+SS.forEach(s=>{const d=new Date(+s.sid);Object.keys(pr[s.sid]||{}).forEach(i=>{const t=pr[s.sid][i];b.push([s.date?s.date.split("-").reverse().join("/"):d.toLocaleDateString("fr-FR"),s.start||"",s.end||"",s.label,N[i],t?t.toLocaleTimeString("fr-FR"):""])})});
 const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(a),"Absences");XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(b),"Présences");
 XLSX.writeFile(wb,"presence-semaine.xlsx");msg("sres",true,"Fichier téléchargé.")};
 let ev=null;
