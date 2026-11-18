@@ -117,8 +117,8 @@ nav button[aria-selected="true"]{color:var(--pk)}
 
 <section id="t-sui" hidden>
 <div class="card">
-<h2>Suivi</h2><select id="seld" aria-label="Choisir la séance"></select>
-<table><thead><tr><th>Étudiant</th><th>Séance</th><th>Absences</th></tr></thead><tbody id="tb"></tbody></table>
+<h2>Suivi</h2><select id="seld" aria-label="Choisir la séance"></select><p class="mut" id="wk"></p>
+<table><thead><tr><th>Étudiant</th><th>Séance</th><th>Semaine</th><th>Total</th></tr></thead><tbody id="tb"></tbody></table>
 <button class="pri" id="xl">Télécharger le fichier Excel</button>
 <button class="sec" id="out">Se déconnecter</button>
 <div id="sres"></div>
@@ -172,7 +172,9 @@ if(p.a!=null&&dist(pos.lat,pos.lng,p.a,p.o)>RAY){msg("res",false,"Scan refusé :
 const b=writeBatch(db);
 b.set(doc(db,"scans",p.s+"_"+i),{sid:p.s,i,token:p.t,ts:serverTimestamp(),dev:DEV,lat:pos.lat,lng:pos.lng});
 b.set(doc(db,"devices",p.s+"_"+DEV),{sid:p.s,i});
-try{await b.commit();const t=new Date();msg("res",true,"Présence enregistrée à "+String(t.getHours()).padStart(2,"0")+"h"+String(t.getMinutes()).padStart(2,"0")+" pour "+N[i]+".");confetti()}
+try{await b.commit();const t=new Date(),hh=String(t.getHours()).padStart(2,"0")+"h"+String(t.getMinutes()).padStart(2,"0");
+$("res").innerHTML='<div class="msg ok" style="text-align:center;padding:20px"><div style="font-size:48px">✅</div><div style="font-size:21px">Tu as été marqué présent !</div><div style="font-weight:400;margin-top:6px">'+N[i]+" · "+hh+"</div></div>";
+$("res").scrollIntoView({behavior:"smooth",block:"center"});if(navigator.vibrate)navigator.vibrate(200);confetti()}
 catch(e){msg("res",false,e.code==="permission-denied"?"Scan refusé : code expiré, présence fermée, hors des heures du cours, nom déjà marqué ou téléphone déjà utilisé.":"Erreur ("+(e.code||"inconnue")+"). Vérifie ta connexion et réessaie.")}}
 /* ---- Connexion délégué ---- */
 async function login(){try{await signInWithEmailAndPassword(au,EMAIL,$("code").value.trim());$("code").value="";$("lres").innerHTML=""}catch(e){msg("lres",false,"Code incorrect.")}}
@@ -201,22 +203,25 @@ tm=setInterval(async()=>{left--;$("bar").style.width=(left/TTL*100)+"%";$("cd").
 $("stop").onclick=async()=>{clearInterval(tm);try{await updateDoc(doc(db,"session","current"),{open:false})}catch(e){}
 sess=null;$("st").textContent="Présence fermée";$("qr").hidden=true;$("barw").hidden=true;$("cd").textContent="";$("go").hidden=false;$("stop").hidden=true};
 /* ---- Suivi ---- */
+const wk=s=>{const d=new Date(+s.sid),w=(d.getDay()+6)%7;d.setHours(0,0,0,0);d.setDate(d.getDate()-w);return d.getTime()};
+const f1=x=>String(Math.round(x*10)/10).replace(".",",");
 function render(){
 const cur=SS.find(s=>s.sid===selSid)||(SS.length?SS[SS.length-1]:null),pr={};
 const fmt=s=>(s.date?s.date.split("-").reverse().join("/"):new Date(+s.sid).toLocaleDateString("fr-FR"))+" "+(s.start||"")+"–"+(s.end||"")+" "+s.label;
 const sel=$("seld"),opts=SS.slice().reverse().map(s=>'<option value="'+s.sid+'"'+(cur&&cur.sid===s.sid?" selected":"")+">"+fmt(s)+"</option>").join("");if(sel.innerHTML!==opts)sel.innerHTML=opts;
 SC.forEach(s=>{(pr[s.sid]=pr[s.sid]||{})[s.i]=s.ts?s.ts.toDate():null});
-let n=0,h="";
-N.forEach((nm,i)=>{let abs=0;SS.forEach(s=>{if(!(pr[s.sid]&&i in pr[s.sid]))abs+=s.hours});
+const cw=cur?wk(cur):null;let n=0,h="";
+if(cur){const d1=new Date(cw),d2=new Date(cw+6*864e5),o={day:"2-digit",month:"2-digit"};$("wk").textContent="Semaine du "+d1.toLocaleDateString("fr-FR",o)+" au "+d2.toLocaleDateString("fr-FR",o)+" : "+f1(SS.filter(s=>wk(s)===cw).reduce((t,s)=>t+s.hours,0))+" h de cours"}else $("wk").textContent="Aucune séance pour l’instant.";
+N.forEach((nm,i)=>{let abs=0,aw=0;SS.forEach(s=>{if(!(pr[s.sid]&&i in pr[s.sid])){abs+=s.hours;if(wk(s)===cw)aw+=s.hours}});
 const p=cur&&pr[cur.sid]&&i in pr[cur.sid],t=p&&pr[cur.sid][i];if(p)n++;
 const hh=t?String(t.getHours()).padStart(2,"0")+"h"+String(t.getMinutes()).padStart(2,"0"):"";
-h+="<tr><td>"+nm+'</td><td><span class="tag" style="background:var('+(p?"--okbg":"--kobg")+');color:var('+(p?"--ok":"--ko")+')">'+(cur?(p?"Présent "+hh:"Absent"):"—")+"</span></td><td>"+abs+" h</td></tr>"});
+h+="<tr><td>"+nm+'</td><td><span class="tag" style="background:var('+(p?"--okbg":"--kobg")+');color:var('+(p?"--ok":"--ko")+')">'+(cur?(p?"Présent "+hh:"Absent"):"—")+"</span></td><td>"+f1(aw)+" h</td><td>"+f1(abs)+" h</td></tr>"});
 $("tb").innerHTML=h;$("cnt").textContent=n+" sur "+N.length}
 $("seld").onchange=e=>{selSid=e.target.value;render()};
 $("xl").onclick=()=>{
 const pr={};SC.forEach(s=>{(pr[s.sid]=pr[s.sid]||{})[s.i]=s.ts?s.ts.toDate():null});
-const a=[["Étudiant","Séances manquées","Heures d’absence"]],b=[["Date","Début","Fin","Matière","Étudiant","Heure du scan"]];
-N.forEach((nm,i)=>{let m=0,hs=0;SS.forEach(s=>{if(!(pr[s.sid]&&i in pr[s.sid])){m++;hs+=s.hours}});a.push([nm,m,hs])});
+const a=[["Étudiant","Séances manquées","Heures d’absence (semaine choisie)","Heures d’absence (total)"]],b=[["Date","Début","Fin","Matière","Étudiant","Heure du scan"]];
+const cu=SS.find(s=>s.sid===selSid)||(SS.length?SS[SS.length-1]:null),cx=cu?wk(cu):null;N.forEach((nm,i)=>{let m=0,hs=0,hw=0;SS.forEach(s=>{if(!(pr[s.sid]&&i in pr[s.sid])){m++;hs+=s.hours;if(wk(s)===cx)hw+=s.hours}});a.push([nm,m,hw,hs])});
 SS.forEach(s=>{const d=new Date(+s.sid);Object.keys(pr[s.sid]||{}).forEach(i=>{const t=pr[s.sid][i];b.push([s.date?s.date.split("-").reverse().join("/"):d.toLocaleDateString("fr-FR"),s.start||"",s.end||"",s.label,N[i],t?t.toLocaleTimeString("fr-FR"):""])})});
 const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(a),"Absences");XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(b),"Présences");
 XLSX.writeFile(wb,"presence-semaine.xlsx");msg("sres",true,"Fichier téléchargé.")};
